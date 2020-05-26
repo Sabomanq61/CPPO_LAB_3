@@ -1,11 +1,15 @@
-#ifndef EXPLORERSTATEGY_H
-#define EXPLORERSTATEGY_H
+#pragma once
 
+#include <QString>
 
-class ExplorerStategy
+class ExplorerStategy // Интерфейс стратегии
 {
 public:
-  ExplorerStategy();
+    ExplorerStategy() =default;
+
+    virtual void Explore(const QString&)const = 0;
+
+    virtual ~ExplorerStategy() = default;
 };
 
-#endif // EXPLORERSTATEGY_H
+

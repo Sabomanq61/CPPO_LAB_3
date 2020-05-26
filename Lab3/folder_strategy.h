@@ -1,11 +1,13 @@
-#ifndef STRATEGYFOLDER_H
-#define STRATEGYFOLDER_H
+#pragma once
 
+#include "explorer_stategy.h"
 
-class StrategyFolder
+class StrategyFolder : public ExplorerStategy
 {
 public:
-  StrategyFolder();
-};
+    StrategyFolder() = default;
 
-#endif // STRATEGYFOLDER_H
+    void Explore(const QString& ) const override;
+
+    ~StrategyFolder() = default;
+};
