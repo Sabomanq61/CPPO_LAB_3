@@ -8,6 +8,6 @@ public:
     StrategyFolder() = default;
 
     void Explore(const QString& ) const override;
-
+    int64_t Size(const QString&) const;
     ~StrategyFolder() = default;
 };
