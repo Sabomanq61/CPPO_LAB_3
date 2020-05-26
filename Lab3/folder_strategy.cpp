@@ -10,16 +10,16 @@ void StrategyFolder::Explore(const QString& path) const
 
     QFileInfo file(path);
 
-    if(file.isDir())
+    if(file.isDir())// Проверка на то что элемент является директорией
     {
         QDir dir(path);
-        vector<QString> names;
+        vector<QString> files;
         vector<int64_t> sizes;
         int64_t total_size = 0;
 
         for(QFileInfo fileInfo : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
-            names.push_back(fileInfo.fileName());
+            files.push_back(fileInfo.fileName());
 
             if(fileInfo.isDir())
             {
@@ -34,9 +34,9 @@ void StrategyFolder::Explore(const QString& path) const
 
         if(total_size)
         {
-            for(size_t it = 0; it < names.size(); ++it)
+            for(size_t it = 0; it < files.size(); ++it)
             {
-                QTextStream(stdout) << names[it] << "  " << (double)sizes[it]/total_size*100 << "%" << endl << flush;
+                QTextStream(stdout) << files[it] << "  " << (double)sizes[it]/total_size*100 << "%" << endl << flush;
             }
         }
         else
@@ -55,9 +55,9 @@ int64_t StrategyFolder::Size(const QString &path) const
         //Обход элементов папки
         for (QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
-            if(it.isDir())//если папка,то считаем ее размер,иначе размер файла
+            if(it.isDir())
             {
-                total_size+=Size(it.absoluteFilePath());
+                total_size += Size(it.absoluteFilePath());// Рекурсия для вычисления размера папки содержащей еще папки.
             }
             else total_size+=it.size();
         }

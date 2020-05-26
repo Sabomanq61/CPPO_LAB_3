@@ -12,33 +12,32 @@ void StrategyType::Explore(const QString& path ) const
     if(fileInfo.isDir())
     {
         QDir dir(path);
-        vector<QString> names;
+        vector<QString> files;
         int64_t total_size=0;
         map<QString,int64_t> hash;
 
-        //проходим по всем элементам в папке
-        for(QFileInfo it: dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
+        //Обход элементов папки
+        for(QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
-            //если папка то вычисляяем ее рамер
-            if(it.isDir()) {
+            if(it.isDir())
+            {
                 Size(it.absoluteFilePath(),hash);
             }
-            //иначе вычисляем размер файла
-            else hash[it.suffix()]+=it.size();
+            else hash[it.suffix()] += it.size();
         }
         for (const auto& it : hash)
         {
             //размер папки
             total_size += it.second;
             //список типов которые есть в папке
-            names.push_back(it.first);
+            files.push_back(it.first);
         }
 
         if(total_size)
         {
-            for(size_t i = 0; i < names.size(); ++i)
+            for(size_t i = 0; i < files.size(); ++i)
             {
-                QTextStream(stdout) << names[i] << ' ' << (double)hash[names[i]] / total_size * 100 << '%' << endl << flush;
+                QTextStream(stdout) << files[i] << ' ' << (double)hash[files[i]] / total_size * 100 << '%' << endl << flush;
             }
         }
         else
@@ -54,7 +53,7 @@ int64_t StrategyType::Size(const QString& path, std::map<QString,int64_t>& hash)
     {
         QDir dir(path);
         int64_t totalSize=0;
-        //проходим по всем элементам папки
+        //Обход элементов папки
         for (QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name)) {
             if(it.isDir()) {
                 Size(it.absoluteFilePath(),hash);
