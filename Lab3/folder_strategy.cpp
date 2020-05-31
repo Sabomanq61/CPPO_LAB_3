@@ -16,27 +16,28 @@ void StrategyFolder::Explore(const QString& path) const
         vector<QString> files;
         vector<int64_t> sizes;
         int64_t total_size = 0;
-
-        for(QFileInfo fileInfo : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
+        //Обход элементов папки.
+        //QDir::получаем список QFileInfo объектов находящихся в папке
+        for(QFileInfo fileInfo : dir.entryInfoList(QDir::Dirs | QDir::Files  | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
             files.push_back(fileInfo.fileName());
 
             if(fileInfo.isDir())
             {
-                sizes.push_back(Size(fileInfo.absoluteFilePath()));
+                sizes.push_back(Size(fileInfo.absoluteFilePath()));//Вычисляем размер папки и добавляем его в наш вектор
             }
             else
             {
                 sizes.push_back(fileInfo.size());
             }
-            total_size += sizes[sizes.size() - 1];
+            total_size += sizes[sizes.size() - 1];//Увеличиваем общий размер объекта по входному пути.
         }
 
         if(total_size)
         {
             for(size_t it = 0; it < files.size(); ++it)
             {
-                QTextStream(stdout) << files[it] << "  " << (double)sizes[it]/total_size*100 << "%" << endl << flush;
+                QTextStream(stdout) << files[it] << ' ' << sizes[it] << ' ' << (double)sizes[it]/total_size*100 << "%" << endl << flush;
             }
         }
         else

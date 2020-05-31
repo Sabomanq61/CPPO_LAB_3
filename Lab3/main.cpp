@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     stratFolder->Explore(path);
 
     Print("Test strategy type");
-    stratType->Explore(path);
+    //stratType->Explore(path);
 
     delete stratType;
     delete stratFolder;

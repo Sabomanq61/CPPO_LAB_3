@@ -11,7 +11,8 @@ public:
     void Explore(const QString& ) const override;
 
     //Подсчет размера папки
+    //param path - Путь к папке
     //return размер папки
-    int64_t Size(const QString&) const;
+    int64_t Size(const QString& path) const;
     ~StrategyFolder() = default;
 };

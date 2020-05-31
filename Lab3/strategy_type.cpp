@@ -6,7 +6,7 @@
 
 void StrategyType::Explore(const QString& path ) const
 {
-    using namespace std;
+    using namespace std; // Используем пространство имен std
     QFileInfo fileInfo(path);
 
     if(fileInfo.isDir())
@@ -37,7 +37,7 @@ void StrategyType::Explore(const QString& path ) const
         {
             for(size_t i = 0; i < files.size(); ++i)
             {
-                QTextStream(stdout) << files[i] << ' ' << (double)hash[files[i]] / total_size * 100 << '%' << endl << flush;
+                QTextStream(stdout) << files[i] << ' ' << hash[files[i]] <<' ' << (double)hash[files[i]] / total_size * 100 << '%' << endl << flush;
             }
         }
         else
@@ -54,9 +54,11 @@ int64_t StrategyType::Size(const QString& path, std::map<QString,int64_t>& hash)
         QDir dir(path);
         int64_t totalSize=0;
         //Обход элементов папки
-        for (QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name)) {
-            if(it.isDir()) {
-                Size(it.absoluteFilePath(),hash);
+        for (QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files  | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
+        {
+            if(it.isDir())
+            {
+                Size(it.absoluteFilePath(),hash);//Идем рекурсивно по найденным папкам .
             }
             else hash[it.suffix()]+=it.size();
         }
