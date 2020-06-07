@@ -4,7 +4,7 @@
 #include <vector>
 #include <QTextStream>
 
-void StrategyFolder::Explore(const QString& path) const
+std::shared_ptr<DirInfo> StrategyFolder::Explore(const QString& path) const
 {
     using namespace std;
 
@@ -12,36 +12,30 @@ void StrategyFolder::Explore(const QString& path) const
 
     if(file.isDir())// Проверка на то что элемент является директорией
     {
+        std::shared_ptr<DirInfo> dirInfo(new DirInfo{});
+        dirInfo->path_ = path;
+        std::map<QString, uint64_t> temp{}; // Временное хранилище для хранения размеров объекта .
         QDir dir(path);
-        vector<QString> files;
-        vector<int64_t> sizes;
-        int64_t total_size = 0;
 
         for(QFileInfo fileInfo : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
-            files.push_back(fileInfo.fileName());
+            QString name = fileInfo.fileName();
+            int64_t size{};
 
-            if(fileInfo.isDir())
-            {
-                sizes.push_back(Size(fileInfo.absoluteFilePath()));
-            }
-            else
-            {
-                sizes.push_back(fileInfo.size());
-            }
-            total_size += sizes[sizes.size() - 1];
+            size = Size(fileInfo.absoluteFilePath());
+
+            dirInfo->totalSize_ += size;
+            temp.insert({fileInfo.fileName(), size});
         }
 
-        if(total_size)
+        for(auto it = temp.begin() ; it != temp.end(); ++it)
         {
-            for(size_t it = 0; it < files.size(); ++it)
-            {
-                QTextStream(stdout) << files[it] << "  " << (double)sizes[it]/total_size*100 << "%" << endl << flush;
-            }
+            dirInfo->hash_.insert({it->first, (double)it->second / dirInfo->totalSize_ * 100});
         }
-        else
-            QTextStream(stdout) << "Folder is empty" << endl << flush;
+
+        return dirInfo;
     }
+    return nullptr;
 }
 
 int64_t StrategyFolder::Size(const QString &path) const
@@ -63,7 +57,7 @@ int64_t StrategyFolder::Size(const QString &path) const
         }
         return total_size;
     }
-    return 0;
+    return fileInfo.size();
 }
 
 

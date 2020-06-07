@@ -4,61 +4,60 @@
 #include <vector>
 #include <QTextStream>
 
-void StrategyType::Explore(const QString& path ) const
+std::shared_ptr<DirInfo> StrategyType::Explore(const QString& path ) const
 {
     using namespace std;
     QFileInfo fileInfo(path);
 
     if(fileInfo.isDir())
     {
+        shared_ptr<DirInfo> result(new DirInfo{});
         QDir dir(path);
-        vector<QString> files;
-        int64_t total_size=0;
-        map<QString,int64_t> hash;
+        result->path_ = path;
 
-        //Обход элементов папки
+        map<QString, uint64_t> tempHash{};
+
         for(QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
             if(it.isDir())
             {
-                Size(it.absoluteFilePath(),hash);
+                result->totalSize_ += Size(it.absoluteFilePath(), tempHash);
             }
-            else hash[it.suffix()] += it.size();
-        }
-        for (const auto& it : hash)
-        {
-            //размер папки
-            total_size += it.second;
-            //список типов которые есть в папке
-            files.push_back(it.first);
+            else
+            {
+                tempHash[it.suffix()] += it.size();
+                result->totalSize_ += it.size();
+            }
         }
 
-        if(total_size)
+        for(const auto& it : tempHash)
         {
-            for(size_t i = 0; i < files.size(); ++i)
-            {
-                QTextStream(stdout) << files[i] << ' ' << (double)hash[files[i]] / total_size * 100 << '%' << endl << flush;
-            }
+            result->hash_[it.first] = (double)it.second / result->totalSize_ * 100;
         }
-        else
-        {
-            QTextStream(stdout) << "Folder is empty" << endl << flush;
-        }
+        return result;
     }
+    return nullptr;
 }
-int64_t StrategyType::Size(const QString& path, std::map<QString,int64_t>& hash) const
+
+
+int64_t StrategyType::Size(const QString& path, std::map<QString,uint64_t>& hash) const
 {
     QFileInfo fileInfo(path);
     if(fileInfo.isDir())
     {
         QDir dir(path);
-        int64_t totalSize=0;
+        uint64_t totalSize=0;
         //Обход элементов папки
         for (QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name)) {
-            if(it.isDir()) {
-                Size(it.absoluteFilePath(),hash);
+            if(it.isDir())
+            {
+                totalSize += Size(it.absoluteFilePath(),hash);
             }
-            else hash[it.suffix()]+=it.size();
+            else
+            {
+                hash[it.suffix()]+=it.size();
+                totalSize += it.size();
+            }
         }
         return totalSize;
     }
