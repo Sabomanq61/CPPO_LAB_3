@@ -82,5 +82,3 @@ int64_t StrategyType::Size(const QString& path, std::map<QString,uint64_t>& hash
 
 
 
-
-

@@ -5,35 +5,35 @@
 #include <QTextStream>
 
 std::shared_ptr<DirInfo> StrategyFolder::Explore(const QString& path) const
-{
-    using namespace std;
+{using namespace std;
+    QFileInfo fileInfo(path);
 
-    QFileInfo file(path);
-
-    if(file.isDir())// Проверка на то что элемент является директорией
+    if(fileInfo.isDir())
     {
-        std::shared_ptr<DirInfo> dirInfo(new DirInfo{});
-        dirInfo->path_ = path;
-        std::map<QString, uint64_t> temp{}; // Временное хранилище для хранения размеров объекта .
+        shared_ptr<DirInfo> result(new DirInfo{});
         QDir dir(path);
+        result->path_ = path;
 
-        for(QFileInfo fileInfo : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
+        map<QString, uint64_t> tempHash{};
+
+        for(QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
         {
-            QString name = fileInfo.fileName();
-            int64_t size{};
-
-            size = Size(fileInfo.absoluteFilePath());
-
-            dirInfo->totalSize_ += size;
-            temp.insert({fileInfo.fileName(), size});
+            if(it.isDir())
+            {
+                result->totalSize_ += Size(it.absoluteFilePath(), tempHash);
+            }
+            else
+            {
+                tempHash[it.suffix()] += it.size();
+                result->totalSize_ += it.size();
+            }
         }
 
-        for(auto it = temp.begin() ; it != temp.end(); ++it)
+        for(const auto& it : tempHash)
         {
-            dirInfo->hash_.insert({it->first, (double)it->second / dirInfo->totalSize_ * 100});
+            result->hash_[it.first] = (double)it.second / result->totalSize_ * 100;
         }
-
-        return dirInfo;
+        return result;
     }
     return nullptr;
 }
