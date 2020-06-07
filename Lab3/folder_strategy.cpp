@@ -4,45 +4,38 @@
 #include <vector>
 #include <QTextStream>
 
-void StrategyFolder::Explore(const QString& path) const
-{
-    using namespace std;
+std::shared_ptr<DirInfo> StrategyFolder::Explore(const QString& path) const
+{using namespace std;
+    QFileInfo fileInfo(path);
 
-    QFileInfo file(path);
-
-    if(file.isDir())// Проверка на то что элемент является директорией
+    if(fileInfo.isDir())
     {
+        shared_ptr<DirInfo> result(new DirInfo{});
         QDir dir(path);
-        vector<QString> files;
-        vector<int64_t> sizes;
-        int64_t total_size = 0;
-        //Обход элементов папки.
-        //QDir::получаем список QFileInfo объектов находящихся в папке
-        for(QFileInfo fileInfo : dir.entryInfoList(QDir::Dirs | QDir::Files  | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
-        {
-            files.push_back(fileInfo.fileName());
+        result->path_ = path;
 
-            if(fileInfo.isDir())
+        map<QString, uint64_t> tempHash{};
+
+        for(QFileInfo it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDir::Name))
+        {
+            if(it.isDir())
             {
-                sizes.push_back(Size(fileInfo.absoluteFilePath()));//Вычисляем размер папки и добавляем его в наш вектор
+                result->totalSize_ += Size(it.absoluteFilePath(), tempHash);
             }
             else
             {
-                sizes.push_back(fileInfo.size());
+                tempHash[it.suffix()] += it.size();
+                result->totalSize_ += it.size();
             }
-            total_size += sizes[sizes.size() - 1];//Увеличиваем общий размер объекта по входному пути.
         }
 
-        if(total_size)
+        for(const auto& it : tempHash)
         {
-            for(size_t it = 0; it < files.size(); ++it)
-            {
-                QTextStream(stdout) << files[it] << ' ' << sizes[it] << ' ' << (double)sizes[it]/total_size*100 << "%" << endl << flush;
-            }
+            result->hash_[it.first] = (double)it.second / result->totalSize_ * 100;
         }
-        else
-            QTextStream(stdout) << "Folder is empty" << endl << flush;
+        return result;
     }
+    return nullptr;
 }
 
 int64_t StrategyFolder::Size(const QString &path) const
@@ -64,7 +57,7 @@ int64_t StrategyFolder::Size(const QString &path) const
         }
         return total_size;
     }
-    return 0;
+    return fileInfo.size();
 }
 
 
